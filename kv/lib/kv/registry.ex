@@ -33,7 +33,7 @@ defmodule KV.Registry do
     GenServer.cast(server, {:create, name})
   end
 
-  ## Server Callbacks
+  ## Server callbacks
 
   def init(:ok) do
     names = %{}
@@ -41,37 +41,29 @@ defmodule KV.Registry do
     {:ok, {names, refs}}
   end
 
-  def handle_call({:lookup, name}, _from,  {names, _} = state) do
+  def handle_call({:lookup, name}, _from, {names, _} = state) do
     {:reply, Map.fetch(names, name), state}
   end
 
   def handle_cast({:create, name}, {names, refs}) do
     if Map.has_key?(names, name) do
-      {:noreply, {names,state}}
+      {:noreply, {names, refs}}
     else
       {:ok, pid} = KV.Bucket.start_link
       ref = Process.monitor(pid)
       refs = Map.put(refs, ref, name)
+      names = Map.put(names, name, pid)
       {:noreply, {names, refs}}
     end
   end
 
-  @doc """
-  Handles :DOWN messages from failed buckets removing
-  the corresponding bucket and refs from state and returning
-  the updated state
-  """
   def handle_info({:DOWN, ref, :process, _pid, _reason}, {names, refs}) do
     {name, refs} = Map.pop(refs, ref)
     names = Map.delete(names, name)
     {:noreply, {names, refs}}
   end
 
-  @doc """
-  Ignores all the other state messages
-  """
   def handle_info(_msg, state) do
     {:noreply, state}
   end
-
 end
