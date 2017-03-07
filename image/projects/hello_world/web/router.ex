@@ -2,7 +2,7 @@ defmodule HelloWorld.Router do
   use HelloWorld.Web, :router
 
   pipeline :browser do
-    plug :accepts, ["html"]
+    plug :accepts, ["html", "text", "xml"]
     plug :fetch_session
     plug :fetch_flash
     plug :protect_from_forgery
@@ -18,12 +18,17 @@ defmodule HelloWorld.Router do
 
     get "/", PageController, :index
     get "/hello", HelloController, :index
+    get "/hello/void", HelloController, :void
     get "/hello/:messenger", HelloController, :show
     resources "/users", UserController do
       resources "/posts", PostController
     end
     resources "/comments", CommentController
     resources "/reviews", ReviewController
+  end
+  # New route for redirects
+  scope "/", HelloWorld do
+    get "/redirect_test", PageController, :redirect_test, as: :redirect_test
   end
 
   scope "/admin", HelloWorld.Admin, as: :admin do

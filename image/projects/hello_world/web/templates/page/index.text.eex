@@ -1,0 +1,2 @@
+This is some text for text-only responses!
+Hi <%= @name %>

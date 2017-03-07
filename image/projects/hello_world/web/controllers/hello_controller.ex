@@ -1,15 +1,29 @@
 defmodule HelloWorld.HelloController do
   use HelloWorld.Web, :controller
 
+  plug :welcome_message, "Welcome! " when action in [:index, :show]
+
   def index(conn, _params) do
-    render conn, "index.html"
-#    conn
-#    |> put_flash(:info, "Welcome to Phoenix, from flash info!")
-#    |> put_flash(:error, "Let's pretend we have an error.")
-#    |> render("index.html")
+    conn
+    #|> assign(:message, "Welcome Back!")
+    |> put_layout("admin.html")
+    |> assign(:name, "Dweezil")
+    |> render("index.html")
+  end
+
+  defp welcome_message(conn, msg) do
+    assign(conn, :message, msg)
   end
 
   def show(conn, %{"messenger" => messenger}) do
-    render conn, "show.html", messenger: messenger
+    conn
+    |> assign(:message, "--overridden")
+    |> render "show.html", messenger: messenger
+  end
+
+  def void(conn, _params) do
+    conn
+    |> put_resp_content_type("text/plain")
+    |> send_resp(201, "")
   end
 end
